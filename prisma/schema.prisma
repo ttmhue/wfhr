@@ -7,13 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model action {
+model Action {
   id                    Int                     @id
   name                  String?                 @db.VarChar(45)
   permission_has_action permission_has_action[]
 }
 
-model permission {
+model Permission {
   id                    Int                     @id @default(autoincrement())
   name                  String?                 @db.VarChar(45)
   permission_has_action permission_has_action[]
@@ -23,15 +23,15 @@ model permission {
 model permission_has_action {
   permission_id Int
   action_id     Int
-  action        action     @relation(fields: [action_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_action1")
-  permission    permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_permission1")
+  action        Action     @relation(fields: [action_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_action1")
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_permission1")
 
   @@id([permission_id, action_id])
   @@index([action_id], map: "fk_permission_has_action_action1_idx")
   @@index([permission_id], map: "fk_permission_has_action_permission1_idx")
 }
 
-model report {
+model Report {
   id               Int
   name             String?   @db.VarChar(45)
   task_today       String?   @db.VarChar(300)
@@ -41,13 +41,13 @@ model report {
   report_date      DateTime? @db.Date
   created_by       Int
   is_on_leave      Int?      @db.TinyInt
-  user             user      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_report_user1")
+  user             User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_report_user1")
 
   @@id([id, created_by])
   @@index([created_by], map: "fk_report_user1_idx")
 }
 
-model request {
+model Request {
   id             Int       @default(autoincrement())
   reason         String?   @db.VarChar(45)
   is_allday      Boolean?
@@ -55,13 +55,13 @@ model request {
   requested_date DateTime? @db.Date
   status         Int?      @db.TinyInt
   created_by     Int
-  user           user      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_request_user")
+  user           User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_request_user")
 
   @@id([id, created_by])
   @@index([created_by], map: "fk_request_user_idx")
 }
 
-model role {
+model Role {
   id                  Int                   @id @default(autoincrement())
   name                String?               @db.VarChar(45)
   code                String?               @db.VarChar(10)
@@ -69,21 +69,21 @@ model role {
   last_modify_by      String?               @db.VarChar(45)
   is_active           Int?                  @db.TinyInt
   role_has_permission role_has_permission[]
-  user                user[]
+  user                User[]
 }
 
 model role_has_permission {
   role_id       Int
   permission_id Int
-  permission    permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_permission1")
-  role          role       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_role1")
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_permission1")
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_role1")
 
   @@id([role_id, permission_id])
   @@index([permission_id], map: "fk_role_has_permission_permission1_idx")
   @@index([role_id], map: "fk_role_has_permission_role1_idx")
 }
 
-model team {
+model Team {
   id           Int         @id
   name         String?     @db.VarChar(45)
   no_of_member Int?
@@ -94,8 +94,8 @@ model team {
   user_team    user_team[]
 }
 
-model user {
-  id            Int         @default(autoincrement())
+model User {
+  id            Int         @default(autoincrement()) @unique
   email         String?     @db.VarChar(45)
   name          String?     @db.VarChar(45)
   code          String?     @db.VarChar(45)
@@ -103,9 +103,9 @@ model user {
   starting_date DateTime?   @db.Date
   updated_at    DateTime?   @db.Date
   role_id       Int
-  role          role        @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_role1")
-  report        report[]
-  request       request[]
+  role          Role        @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_role1")
+  report        Report[]
+  request       Request[]
   user_team     user_team[]
 
   @@id([id, role_id])
@@ -115,8 +115,8 @@ model user {
 model user_team {
   user_id Int
   team_id Int
-  team    team @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_team1_idx")
-  user    user @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_user1_idx")
+  team    Team @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_team1_idx")
+  user    User @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_user1_idx")
 
   @@id([user_id, team_id])
   @@index([team_id], map: "fk_user_team_team1_idx")
