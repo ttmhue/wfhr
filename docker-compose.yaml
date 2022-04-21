@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  server:
+    platform: linux/x86_64
+    container_name: server
+    image: '${test_graphql}'
+    env_file: .env
+    restart: always
+    ports:
+      - 81:80
+  mysql:
+    image: mysql:5.7
+    platform: linux/x86_64
+    container_name: mysql
+    ports:
+      - 3306:3306
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: wfhr
+      MYSQL_DATABASE: wfhr
+      MYSQL_USER: wfhr
+      MYSQL_PASSWORD: wfhr
