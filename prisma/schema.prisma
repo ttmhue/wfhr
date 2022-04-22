@@ -32,30 +32,31 @@ model permission_has_action {
 }
 
 model Report {
-  id               Int
-  name             String?   @db.VarChar(45)
-  task_today       String?   @db.VarChar(300)
-  task_tomorrow    String?   @db.VarChar(300)
-  created_date     DateTime? @db.Date
-  issue            String?   @db.VarChar(45)
-  report_date      DateTime? @db.Date
-  created_by       Int
-  is_on_leave      Int?      @db.TinyInt
-  user             User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_report_user1")
+  id            Int
+  name          String?   @db.VarChar(45)
+  task_today    String?   @db.VarChar(300)
+  task_tomorrow String?   @db.VarChar(300)
+  created_date  DateTime? @db.Date
+  issue         String?   @db.VarChar(45)
+  report_date   DateTime? @db.Date
+  created_by    Int
+  is_on_leave   Int?      @db.TinyInt
+  user          User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_report_user1")
 
   @@id([id, created_by])
   @@index([created_by], map: "fk_report_user1_idx")
 }
 
 model Request {
-  id             Int       @default(autoincrement())
-  reason         String?   @db.VarChar(45)
-  is_allday      Boolean?
-  created_date   DateTime? @db.Date
-  requested_date DateTime? @db.Date
-  status         Int?      @db.TinyInt
-  created_by     Int
-  user           User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_request_user")
+  id                   Int       @default(autoincrement())
+  reason               String?   @db.VarChar(45)
+  is_allday            Boolean?   @default(false)
+  created_date         DateTime? @default(now())
+  requested_date_start DateTime? @db.Date
+  requested_date_end   DateTime? @db.Date
+  status               String    @default("PENDING") @db.VarChar(10)
+  created_by           Int
+  user                 User      @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_request_user")
 
   @@id([id, created_by])
   @@index([created_by], map: "fk_request_user_idx")
@@ -67,7 +68,7 @@ model Role {
   code                String?               @db.VarChar(10)
   last_modify_on      DateTime?             @db.Date
   last_modify_by      String?               @db.VarChar(45)
-  is_active           Int?                  @db.TinyInt
+  is_active           Int?                  @default(0) @db.TinyInt
   role_has_permission role_has_permission[]
   user                User[]
 }
@@ -95,7 +96,7 @@ model Team {
 }
 
 model User {
-  id            Int         @default(autoincrement()) @unique
+  id            Int         @unique(map: "User_id_key") @default(autoincrement())
   email         String?     @db.VarChar(45)
   name          String?     @db.VarChar(45)
   code          String?     @db.VarChar(45)

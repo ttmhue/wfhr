@@ -44,10 +44,11 @@ CREATE TABLE `Report` (
 CREATE TABLE `Request` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `reason` VARCHAR(45) NULL,
-    `is_allday` BOOLEAN NULL,
-    `created_date` DATE NULL,
-    `requested_date` DATE NULL,
-    `status` TINYINT NULL,
+    `is_allday` BOOLEAN NULL DEFAULT false,
+    `created_date` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `requested_date_start` DATE NULL,
+    `requested_date_end` DATE NULL,
+    `status` VARCHAR(10) NOT NULL DEFAULT 'PENDING',
     `created_by` INTEGER NOT NULL,
 
     INDEX `fk_request_user_idx`(`created_by`),
@@ -61,7 +62,7 @@ CREATE TABLE `Role` (
     `code` VARCHAR(10) NULL,
     `last_modify_on` DATE NULL,
     `last_modify_by` VARCHAR(45) NULL,
-    `is_active` TINYINT NULL,
+    `is_active` TINYINT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
