@@ -6,66 +6,56 @@ import {
   Param,
   Post,
   Put,
-  Req,
 } from '@nestjs/common';
-import { Prisma, User, Request } from '@prisma/client';
-import { CreateRequestDto } from '../dto/create-request.dto';
+import { Prisma, Request, User } from '@prisma/client';
+import { GetUser } from 'src/auth/decorators/auth.decorator';
+import { RequestDto } from '../dto/request.dto';
+import { FindOneParams } from '../utils/findOneParam';
 import { RequestService } from '../services/request.service';
 
 @Controller('request')
 export class RequestController {
   constructor(private readonly requestService: RequestService) {}
-  // @Post()
-  // create(@Body() createRequestDto: CreateRequestDto, @Req() req: RequestWithUser) {
-  //   return this.requestService.createRequest(createRequestDto, req.user);
-  // }
-
-  @Post()
-  async create(
-    @Body() postData: CreateRequestDto): Promise<Request> {
-    const { reason, requested_date_start, requested_date_end, created_by } = postData;
-    return this.requestService.createRequest({
-      reason,
-      requested_date_start,
-      requested_date_end,
-      user: {
-        connect: { id: +created_by },
-      },
-    });
-  }
-
 
   @Get()
   findAll() {
     return this.requestService.getAllRequest();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') {id}: FindOneParams) {
-  //   return this.requestService.getRequestbyId({ id_created_by: {
-  //     id: id ,
-  //     created_by: id,
-  // }});;
-  // }
+  @Get('mine')
+  async getRequestsByOwner(@GetUser() user: User): Promise<Request[]> {
+    return this.requestService.getRequestsByOwner(user);
+  }
 
   @Get(':id')
-  async getRequestbyId(@Param('id') id: string): Promise<Request> {
-    return this.requestService.getRequestbyId({ id_created_by: {
-      id: Number(id) ,
-      created_by: Number(id),
-  }});
+  getPostById(
+    @Param() { id }: FindOneParams,
+    @GetUser() user: User,
+  ): Promise<Request> {
+    return this.requestService.getRequestById(Number(id), user);
+  }
+
+  @Post()
+  async createRequest(
+    @Body() request: RequestDto, 
+    @GetUser() user: User
+  ): Promise<Request> {
+    return this.requestService.createRequest(request, user);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: Prisma.RequestWhereUniqueInput,
-    @Body() request: Prisma.RequestUpdateInput,
-  ) {
-    return this.requestService.updateRequest(id, request);
+  async updateRequest(
+    @Param() { id }: FindOneParams, 
+    @Body() post: RequestDto,
+    @GetUser() user: User
+  ): Promise<Request> {
+    return this.requestService.updateRequest(Number(id), post, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: Prisma.RequestWhereUniqueInput) {
-    return this.requestService.deleteRequest(id);
+  async deleteRequest(
+    @Param() { id }: FindOneParams,
+  ) {
+    return this.requestService.deleteRequest(Number(id));
   }
 }
