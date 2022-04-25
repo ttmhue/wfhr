@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, Request, User } from '@prisma/client';
 import { RequestDto } from '../dto/request.dto';
-import { RequestNotFoundException } from '../utils/request.exception';
+import { RequestNotFoundException } from '../exception/request.exception';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { PrismaError } from '../utils/prismaError';
-// import { CreateRequestDto } from '../dto/create-request.dto';
+import { PrismaError } from '../../common/utils/prismaError';
+import { RequestStatus } from '../request-status.enum';
 
 @Injectable()
 export class RequestService {
@@ -13,6 +13,35 @@ export class RequestService {
 
   async getAllRequest() {
     return await this.prisma.request.findMany();
+  }
+
+  async getRequestsByTeam(id: User){
+    // return await this.prisma.request.findMany({ 
+    //   where : {
+    //     user: {
+    //       user_team: {
+    //         every: {
+    //           team_id: Number(id.id)
+    //         }
+    //       }
+    //     }
+    //   },
+    //   
+    //   },
+    // })
+    const team = await this.prisma.team.findUnique({
+      where: {
+        leader: +id.id
+      }
+    })
+    console.log(team)
+    // const teamOfUser = this.prisma.user_team.findMany({
+    //   where: {
+    //     team_id: {
+
+    //     }
+    //   }
+    // })
   }
 
   async getRequestsByOwner(user: User): Promise<Request[]> {
@@ -59,6 +88,33 @@ export class RequestService {
           id_created_by: {
             id: id,
             created_by: user.id,
+          },
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new RequestNotFoundException(id);
+      }
+      throw error;
+    }
+  }
+
+  async updateRequestStatus(
+    id: number,
+    status: RequestStatus,
+  ): Promise<Request> {
+    try {
+      return await this.prisma.request.update({
+        data: {
+          status,
+        },
+        where: {
+          id_created_by: {
+            id: id,
+            created_by: id,
           },
         },
       });

@@ -4,14 +4,17 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
 } from '@nestjs/common';
 import { Prisma, Request, User } from '@prisma/client';
-import { GetUser } from 'src/auth/decorators/auth.decorator';
+import { GetUser } from 'src/common/decorators/req-user.decorator';
 import { RequestDto } from '../dto/request.dto';
-import { FindOneParams } from '../utils/findOneParam';
+import { FindOneParams } from '../../common/utils/findOneParam';
 import { RequestService } from '../services/request.service';
+import { RequestStatus } from '../request-status.enum';
+import { RequestStatusValidationPipe } from '../request-status-validation.pipe';
 
 @Controller('request')
 export class RequestController {
@@ -27,8 +30,13 @@ export class RequestController {
     return this.requestService.getRequestsByOwner(user);
   }
 
+  @Get('team/:id')
+  async getRequestsByTeam( @Param() id: User ) {
+    return this.requestService.getRequestsByTeam(id);
+  }
+
   @Get(':id')
-  getPostById(
+  getRequestById(
     @Param() { id }: FindOneParams,
     @GetUser() user: User,
   ): Promise<Request> {
@@ -46,10 +54,18 @@ export class RequestController {
   @Put(':id')
   async updateRequest(
     @Param() { id }: FindOneParams, 
-    @Body() post: RequestDto,
+    @Body() request: RequestDto,
     @GetUser() user: User
   ): Promise<Request> {
-    return this.requestService.updateRequest(Number(id), post, user);
+    return this.requestService.updateRequest(Number(id), request, user);
+  }
+
+  @Patch(':id/status')
+  async updateRequestStatus(
+    @Param() { id }: FindOneParams, 
+    @Body('status', RequestStatusValidationPipe) status: RequestStatus,
+  ): Promise<Request> {
+    return this.requestService.updateRequestStatus(Number(id), status);
   }
 
   @Delete(':id')
