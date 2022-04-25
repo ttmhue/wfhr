@@ -11,37 +11,36 @@ import { RequestStatus } from '../request-status.enum';
 export class RequestService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllRequest() {
+  async getAllRequests() {
     return await this.prisma.request.findMany();
   }
 
-  async getRequestsByTeam(id: User){
-    // return await this.prisma.request.findMany({ 
-    //   where : {
-    //     user: {
-    //       user_team: {
-    //         every: {
-    //           team_id: Number(id.id)
-    //         }
-    //       }
-    //     }
-    //   },
-    //   
-    //   },
-    // })
+  async getRequestsByTeam(id: User) {
     const team = await this.prisma.team.findUnique({
       where: {
-        leader: +id.id
-      }
-    })
-    console.log(team)
-    // const teamOfUser = this.prisma.user_team.findMany({
-    //   where: {
-    //     team_id: {
+        leader: +id.id,
+      },
+    });
+    console.log(team.id);
+    const user = await this.prisma.user_team.findMany({
+      where: {
+        team_id: team.id,
+      },
+    });
+    console.log(user);
+    const b = [];
+    user.forEach((a) => {
+      b.push(a.user_id);
+    });
+    console.log(b);
 
-    //     }
-    //   }
-    // })
+    return await this.prisma.request.findMany({
+      where: {
+        user: {
+          id: user,
+        },
+      },
+    });
   }
 
   async getRequestsByOwner(user: User): Promise<Request[]> {

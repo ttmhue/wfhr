@@ -19,19 +19,18 @@ import { RequestStatusValidationPipe } from '../request-status-validation.pipe';
 @Controller('request')
 export class RequestController {
   constructor(private readonly requestService: RequestService) {}
-
-  @Get()
-  findAll() {
-    return this.requestService.getAllRequest();
+  @Get('hr')
+  async getAllRequests() {
+    return this.requestService.getAllRequests();
   }
-
-  @Get('mine')
+  
+  @Get('dev')
   async getRequestsByOwner(@GetUser() user: User): Promise<Request[]> {
     return this.requestService.getRequestsByOwner(user);
   }
 
-  @Get('team/:id')
-  async getRequestsByTeam( @Param() id: User ) {
+  @Get('tl/:id')
+  async getRequestsByTeam(@Param() id: User) {
     return this.requestService.getRequestsByTeam(id);
   }
 
@@ -45,33 +44,31 @@ export class RequestController {
 
   @Post()
   async createRequest(
-    @Body() request: RequestDto, 
-    @GetUser() user: User
+    @Body() request: RequestDto,
+    @GetUser() user: User,
   ): Promise<Request> {
     return this.requestService.createRequest(request, user);
   }
 
   @Put(':id')
   async updateRequest(
-    @Param() { id }: FindOneParams, 
+    @Param() { id }: FindOneParams,
     @Body() request: RequestDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ): Promise<Request> {
     return this.requestService.updateRequest(Number(id), request, user);
   }
 
   @Patch(':id/status')
   async updateRequestStatus(
-    @Param() { id }: FindOneParams, 
+    @Param() { id }: FindOneParams,
     @Body('status', RequestStatusValidationPipe) status: RequestStatus,
   ): Promise<Request> {
     return this.requestService.updateRequestStatus(Number(id), status);
   }
 
   @Delete(':id')
-  async deleteRequest(
-    @Param() { id }: FindOneParams,
-  ) {
+  async deleteRequest(@Param() { id }: FindOneParams) {
     return this.requestService.deleteRequest(Number(id));
   }
 }
