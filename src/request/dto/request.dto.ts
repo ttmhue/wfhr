@@ -8,4 +8,5 @@ export class RequestDto {
     requested_date_start: Date
     requested_date_end: Date
     is_allday: boolean
+    status: string
 }

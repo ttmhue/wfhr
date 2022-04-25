@@ -7,6 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model permission_has_action {
+  permission_id Int
+  action_id     Int
+  action        Action     @relation(fields: [action_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_action1")
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_permission1")
+
+  @@id([permission_id, action_id])
+  @@index([action_id], map: "fk_permission_has_action_action1_idx")
+  @@index([permission_id], map: "fk_permission_has_action_permission1_idx")
+}
+
+model role_has_permission {
+  role_id       Int
+  permission_id Int
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_permission1")
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_role1")
+
+  @@id([role_id, permission_id])
+  @@index([permission_id], map: "fk_role_has_permission_permission1_idx")
+  @@index([role_id], map: "fk_role_has_permission_role1_idx")
+}
+
+model user_team {
+  user_id Int
+  team_id Int
+  user    User @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_user1_idx")
+
+  @@id([user_id, team_id])
+  @@index([user_id], map: "fk_user_team_user1_idx")
+}
+
 model Action {
   id                    Int                     @id
   name                  String?                 @db.VarChar(45)
@@ -18,17 +49,6 @@ model Permission {
   name                  String?                 @db.VarChar(45)
   permission_has_action permission_has_action[]
   role_has_permission   role_has_permission[]
-}
-
-model permission_has_action {
-  permission_id Int
-  action_id     Int
-  action        Action     @relation(fields: [action_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_action1")
-  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission_has_action_permission1")
-
-  @@id([permission_id, action_id])
-  @@index([action_id], map: "fk_permission_has_action_action1_idx")
-  @@index([permission_id], map: "fk_permission_has_action_permission1_idx")
 }
 
 model Report {
@@ -50,7 +70,7 @@ model Report {
 model Request {
   id                   Int       @default(autoincrement())
   reason               String?   @db.VarChar(45)
-  is_allday            Boolean?   @default(false)
+  is_allday            Boolean?  @default(false)
   created_date         DateTime? @default(now())
   requested_date_start DateTime? @db.Date
   requested_date_end   DateTime? @db.Date
@@ -73,26 +93,14 @@ model Role {
   user                User[]
 }
 
-model role_has_permission {
-  role_id       Int
-  permission_id Int
-  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_permission1")
-  role          Role       @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_has_permission_role1")
-
-  @@id([role_id, permission_id])
-  @@index([permission_id], map: "fk_role_has_permission_permission1_idx")
-  @@index([role_id], map: "fk_role_has_permission_role1_idx")
-}
-
 model Team {
-  id           Int         @id
-  name         String?     @db.VarChar(45)
+  id           Int       @id @default(autoincrement())
+  name         String?   @db.VarChar(45)
   no_of_member Int?
-  leader       String?     @db.VarChar(45)
-  is_active    Int?        @db.TinyInt
-  created_at   DateTime?   @db.Date
-  updated_at   DateTime?   @db.Date
-  user_team    user_team[]
+  leader       Int?@unique
+  is_active    Int?      @db.TinyInt
+  created_at   DateTime? @db.Date
+  updated_at   DateTime? @db.Date
 }
 
 model User {
@@ -111,15 +119,4 @@ model User {
 
   @@id([id, role_id])
   @@index([role_id], map: "fk_user_role1_idx")
-}
-
-model user_team {
-  user_id Int
-  team_id Int
-  team    Team @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_team1_idx")
-  user    User @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_team_user1_idx")
-
-  @@id([user_id, team_id])
-  @@index([team_id], map: "fk_user_team_team1_idx")
-  @@index([user_id], map: "fk_user_team_user1_idx")
 }
