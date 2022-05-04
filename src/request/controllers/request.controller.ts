@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { RequestService } from '../services/request.service';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('request')
 export class RequestController {
@@ -19,6 +20,11 @@ export class RequestController {
   }
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'The found record',
+    type: '',
+  })
   findAll() {
     return this.requestService.getAllRequest();
   }
